@@ -3,19 +3,13 @@ import json
 import sys
 
 
-TAGS = {
-    'title': 'h1',
-    'body': 'p'
-}
-
 SOURCE_JSON = 'source.json'
 
 
-def render_tag(tag_type, content):
+def render_tag(tag, content):
     """
     Wrap content by html tags.
     """
-    tag = TAGS[tag_type]
     return '<{0}>{1}</{0}>'.format(tag, content)
 
 

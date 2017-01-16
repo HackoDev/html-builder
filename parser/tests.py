@@ -5,11 +5,11 @@ from parse_json import render_tag
 class TestTags(unittest.TestCase):
 
     def setUp(self):
-        self.test_tag1 = 'title'
+        self.test_tag1 = 'h1'
         self.test_value1 = 'test1'
         self.test_result1 = '<h1>test1</h1>'
 
-        self.test_tag2 = 'body'
+        self.test_tag2 = 'p'
         self.test_value2 = 'test2'
         self.test_result2 = '<p>test2</p>'
 
