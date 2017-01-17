@@ -48,6 +48,35 @@ class TestTags(unittest.TestCase):
         html = '<h1>test1<p>test2</p></h1>'
         self.assertEqual(tag1.render(), html)
 
+    def test_parse_dict(self):
+        """
+        Test dictionary parsing
+        """
+        data = {'p': 'Hello!'}
+
+        root = Tag.parse(data)
+        tag = Tag('p')
+        TextTag(data['p'], tag)
+        self.assertEqual(root.render(), tag.render())
+
+    def test_parse_list(self):
+        """
+        Test list parsing
+        """
+        data = [{'p': 'Hello!'}, {'div': 'Example 1'}]
+
+        root = Tag.parse(data)
+
+        tag = Tag('ul')
+        li = Tag('li', tag)
+        tag1 = Tag('p', li)
+        TextTag('Hello!', tag1)
+
+        li = Tag('li', tag)
+        tag2 = Tag('div', li)
+        TextTag('Example 1', tag2)
+        self.assertEqual(root.render(), tag.render())
+
 
 if __name__ == '__main__':
     unittest.main()

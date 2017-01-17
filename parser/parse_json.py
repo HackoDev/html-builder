@@ -35,11 +35,28 @@ class Tag(BaseTag):
             return self.FORMAT_STR.format(self.tag_name, children)
         return children
 
-    def bind_obvious_tags(self, **kwargs):
-        for key, value in kwargs.items():
-            tag = Tag(key)
-            tag.add(TextTag(value))
-            self.add(tag)
+    @classmethod
+    def parse(cls, data):
+        root = cls()
+        if isinstance(data, list):
+            root.parse_list(data)
+        else:
+            root.parse_dict(data)
+        return root
+
+    def parse_dict(self, data):
+        for key, value in data.items():
+            tag = Tag(key, self)
+            if isinstance(value, list):
+                tag.parse_list(value)
+            else:
+                TextTag(value, tag)
+
+    def parse_list(self, data):
+        ul = Tag('ul', self)
+        for item in data:
+            li = Tag('li', ul)
+            li.parse_dict(item)
 
 
 class TextTag(BaseTag):
@@ -55,15 +72,7 @@ class TextTag(BaseTag):
 def main():
     with open(SOURCE_JSON) as f:
         data = json.load(f, object_pairs_hook=OrderedDict)
-    if not isinstance(data, list):
-        root = Tag()
-        root.bind_obvious_tags(**data)
-    else:
-        root = Tag('ul')
-        for el in data:
-            li = Tag('li', root)
-            li.bind_obvious_tags(**el)
-
+    root = Tag.parse(data)
     sys.stdout.write(root.render())
 
 
