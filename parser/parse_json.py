@@ -1,6 +1,8 @@
 from collections import OrderedDict
+import html
 import json
 import sys
+import re
 
 
 SOURCE_JSON = 'source.json'
@@ -20,11 +22,11 @@ class BaseTag(object):
 
 class Tag(BaseTag):
 
-    FORMAT_STR = '<{0}>{1}</{0}>'
+    TAG_STR = '<{0}{2}>{1}</{0}>'
 
     def __init__(self, tag_name=None, parent=None):
         super(Tag, self).__init__(parent)
-        self.tag_name = tag_name
+        self.parse_key(tag_name)
 
     def add(self, *tags):
         self.children.extend(tags)
@@ -32,7 +34,14 @@ class Tag(BaseTag):
     def render(self):
         children = ''.join([child.render() for child in self.children])
         if self.tag_name:
-            return self.FORMAT_STR.format(self.tag_name, children)
+            attrs = []
+            if self.class_list or self.tag_id:
+                attrs = ['']
+                if self.class_list:
+                    attrs.append('class="{}"'.format(' '.join(self.class_list)))
+                if self.tag_id:
+                    attrs.append('id="{}"'.format(self.tag_id))
+            return self.TAG_STR.format(self.tag_name, children, ' '.join(attrs))
         return children
 
     @classmethod
@@ -43,6 +52,18 @@ class Tag(BaseTag):
         else:
             root.parse_dict(data)
         return root
+
+    def parse_key(self, key):
+        self.tag_id = None
+        self.class_list = []
+        if key is None:
+            self.tag_name = key
+            return
+        # initial tag attributes
+        self.tag_name = re.match('^(\w+)', key).group()
+        if re.findall('#(\w+)', key):
+            self.tag_id = re.findall('#(\w+)', key)[0]
+        self.class_list = re.findall('\.(\w+)', key)
 
     def parse_dict(self, data):
         for key, value in data.items():
@@ -63,7 +84,7 @@ class TextTag(BaseTag):
 
     def __init__(self, text='', parent=None):
         super(TextTag, self).__init__(parent)
-        self.text = text
+        self.text = html.escape(text)
 
     def render(self):
         return self.text

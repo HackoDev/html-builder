@@ -1,5 +1,6 @@
-import unittest
 from parse_json import Tag, TextTag
+import unittest
+import html
 
 
 class TestTags(unittest.TestCase):
@@ -58,6 +59,28 @@ class TestTags(unittest.TestCase):
         tag = Tag('p')
         TextTag(data['p'], tag)
         self.assertEqual(root.render(), tag.render())
+
+    def test_attributes(self):
+        """
+        Test parsing attributes
+        """
+        data = {'p.cls1#main': 'Hello!'}
+
+        root = Tag.parse(data)
+        result_str = '<p class="cls1" id="main">Hello!</p>'
+        self.assertEqual(root.render(), result_str)
+
+    def test_special_chars(self):
+        """
+        Test rendering special chars
+        """
+        text = 'Hello, <h1>User</h1>!'
+        data = {'p.cls1#main': text}
+        result_str = '<p class="cls1" id="main">{}</p>'.format(html.escape(text))
+
+        root = Tag.parse(data)
+        self.assertTrue(root.render().find("<h1>") == -1)
+        self.assertEqual(root.render(), result_str)
 
     def test_parse_list(self):
         """
